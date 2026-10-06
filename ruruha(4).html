@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>グッズ譲渡・交換リスト</title>
+    <style>
+        /* 全体の基本設定 */
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+            background-color: #ffffff;
+            color: #0a0a0a;
+            line-height: 1.8;
+            padding: 100px 20px 40px;
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: #0a0a0a;
+            border-bottom: 3px solid #ff4500;
+            padding-bottom: 10px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        /* 管理者ログインボタンの表示エリア */
+        .admin-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .admin-btn {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .admin-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        /* 新規追加フォーム・データ出力ボックス */
+        .add-form-box {
+            display: none;
+            background: #fff;
+            border: 2px solid #ff4500;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .add-form-box h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: #ff4500;
+            border-bottom: 2px solid #ff4500;
+            padding-bottom: 5px;
+            display: inline-block;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .form-group input, .form-group select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .submit-btn {
+            background-color: #ff4500;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            transition: 0.2s;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            opacity: 0.85;
+        }
+
+        /* GitHub用コード出力エリア */
+        .export-box {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px dashed #ff4500;
+        }
+
+        .export-btn {
+            background-color: #2da44e;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: 0.2s;
+            width: 100%;
+        }
+
+        .export-btn:hover {
+            background-color: #2c974b;
+        }
+
+        .export-textarea {
+            width: 100%;
+            height: 100px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 8px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            box-sizing: border-box;
+            display: none;
+        }
+
+        /* 検索バー */
+        .search-box {
+            margin-bottom: 30px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        /* グッズカードの配置 */
+        .goods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .goods-card {
+            background: #fff;
+            border: 2px solid #333;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .goods-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background-color: #eee;
+        }
+
+        .goods-content {
+            padding: 15px;
+            text-align: left;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .goods-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .goods-type {
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: #fff;
+        }
+
+        .type-譲 { background-color: #ff4500; }
+        .type-求 { background-color: #00d2ff; color: #000; }
+
+        .stock-badge {
+            font-weight: bold;
+            font-size: 0.85rem;
+            background: #f0f0f0;
+            padding: 2px 8px;
+            border-radius: 12px;
+            border: 1px solid #ccc;
+        }
+
+        .goods-title {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+
+        .goods-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .tag-badge {
+            background-color: #f0f4f8;
+            color: #0066cc;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .tag-badge:hover {
+            background-color: #0066cc;
+            color: #fff;
+        }
+
+        /* 管理者用：在庫カウント調整エリア */
+        .stock-control {
+            display: none;
+            background: #f9f9f9;
+            padding: 8px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 1px dashed #ccc;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stock-btn {
+            background: #333;
+            color: #fff;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .stock-btn:hover {
+            background: #ff4500;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #cc0000;
+            font-size: 0.75rem;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* トップに戻るボタン */
+        .back-btn { 
+            display: inline-block; 
+            margin-top: 40px; 
+            padding: 10px 20px; 
+            background-color: #00ffff; 
+            color: #0a0a0a; 
+            text-decoration: none; 
+            font-weight: bold;
+            border-radius: 5px; 
+            transition: 0.3s; 
+        }
+
+        .back-btn:hover { 
+            background-color: #ff4500; 
+            color: #fff; 
+        }
+
+        /* ロゴ（画面左上） */
+        .logo-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: inline-block;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .logo-img {
+            height: 68px;
+            width: 135px;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* ハンバーガーメニュー（画面右上） */
+        #menu-toggle { display: none; }
+
+        .hamburger-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+            background-color: #333;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            align-items: center;
+            padding: 8px 0;
+            box-sizing: border-box;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .hamburger-btn span {
+            width: 24px;
+            height: 3px;
+            background-color: #fff;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .dropdown-menu {
+            position: fixed;
+            top: 75px;
+            right: 20px;
+            width: 200px;
+            background-color: rgba(30, 30, 30, 0.95);
+            border-radius: 12px;
+            padding: 15px 0;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px) scale(0.95);
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-menu ul { list-style: none; padding: 0; margin: 0; text-align: center; }
+        .dropdown-menu li { margin: 10px 0; }
+        .dropdown-menu a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: bold;
+            display: block;
+            padding: 8px 0;
+        }
+
+        #menu-toggle:checked ~ .dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+        #menu-toggle:checked ~ .hamburger-btn span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+        #menu-toggle:checked ~ .hamburger-btn span:nth-child(2) { opacity: 0; }
+        #menu-toggle:checked ~ .hamburger-btn span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+
+        /* フッター */
+        .site-footer {
+            background-color: #0d0d0d;
+            color: #ffffff;
+            padding: 40px 20px 20px;
+            margin-top: 60px;
+        }
+
+        .footer-container { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 30px; }
+        .footer-nav { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 20px; text-align: left; }
+        .footer-item { display: flex; flex-direction: column; }
+        .footer-item a { color: #ffffff; text-decoration: none; font-size: 1rem; font-weight: bold; }
+        .footer-item a::before { content: '⬡'; color: #00ffff; margin-right: 5px; }
+        .footer-sub { font-size: 0.75rem; color: #aaaaaa; padding-left: 18px; }
+        .footer-bottom { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #333; padding-top: 20px; flex-wrap: wrap; gap: 15px; }
+        .footer-logo { height: 40px; object-fit: contain; }
+        .footer-sns { display: flex; gap: 15px; }
+        .footer-sns img { width: 28px; height: 28px; filter: brightness(0) invert(1); }
+        .copyright { font-size: 0.8rem; color: #888; margin: 0; }
+    </style>
+</head>
+<body>
+
+    <!-- ロゴ -->
+    <a href="ruruha.html" class="logo-link">
+      <img src="るるはch.png" alt="サイトロゴ" class="logo-img">
+    </a>
+
+    <!-- ハンバーガーメニュー -->
+    <input type="checkbox" id="menu-toggle">
+    <label for="menu-toggle" class="hamburger-btn">
+      <span></span>
+      <span></span>
+      <span></span>
+    </label>
+
+    <nav class="dropdown-menu">
+      <ul>
+        <li><a href="ruruha.html">ホーム</a></li>
+        <li><a href="ruruha(3).html">詳しい自己紹介</a></li>
+        <li><a href="ruruha(1).html">趣味ページ</a></li>
+        <li><a href="ruruha(2).html">推しの紹介</a></li>
+        <li><a href="ruruha(4).html">グッズ管理</a></li>
+        <li><a href="https://twitter.com/S_H_1006neo" target="_blank">Twitter (X)</a></li>
+        <li><a href="https://youtube.com/channel/UC90rEN2i0jCUwfDl-g_GmFQ?app=desktop" target="_blank">YouTube</a></li>  
+      </ul>
+    </nav>
+
+    <!-- メインコンテンツ -->
+    <h1>グッズ譲渡・交換リスト</h1>
+
+    <!-- 管理者バー -->
+    <div class="admin-bar">
+        <span id="admin-status-text" style="font-size: 0.85rem; color: #666;">※閲覧モード（譲渡可能グッズのみ表示中）</span>
+        <button class="admin-btn" id="admin-btn" onclick="toggleAdmin()">🔒 管理者ログイン</button>
+    </div>
+
+    <!-- グッズ追加フォーム（管理者のみ表示） -->
+    <div class="add-form-box" id="add-form-box">
+        <h2>＋ 新しいグッズを追加</h2>
+        <form id="goods-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>区分</label>
+                    <select id="item-type">
+                        <option value="譲">【譲】お譲りできるもの</option>
+                        <option value="求">【求】探しているもの</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>初期在庫数（点）</label>
+                    <input type="number" id="item-stock" value="1" min="1" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>グッズ名・キャラクター名</label>
+                <input type="text" id="item-title" placeholder="例: アクリルスタンド 三途川ハカ" required>
+            </div>
+            <div class="form-group">
+                <label>タグ（カンマ「,」区切り）</label>
+                <input type="text" id="item-tags" placeholder="例: 俺クロ, 三途川ハカ, アクスタ">
+            </div>
+            <div class="form-group">
+                <label>画像ファイル名（GitHub上のファイル名）</label>
+                <input type="text" id="item-image-name" placeholder="例: haka_akusuta.png (※画像なしの場合は空欄)">
+            </div>
+            <button type="submit" class="submit-btn">リストに追加する</button>
+        </form>
+
+        <!-- GitHub更新用コード出力エリア -->
+        <div class="export-box">
+            <button class="export-btn" onclick="generateGitHubCode()">📋 全員公開用コードを出力してコピー</button>
+            <textarea id="export-textarea" class="export-textarea" readonly></textarea>
+        </div>
+    </div>
+
+    <!-- 検索バー -->
+    <div class="search-box">
+        <input type="text" id="search-input" class="search-input" placeholder="🔍 タグやグッズ名でリアルタイム検索...">
+    </div>
+
+    <!-- グッズ一覧表示 -->
+    <div class="goods-grid" id="goods-container"></div>
+
+    <a href="ruruha.html" class="back-btn">← トップページに戻る</a>
+
+    <!-- フッター -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <nav class="footer-nav">
+                <div class="footer-item"><a href="ruruha.html">HOME</a><span class="footer-sub">ホーム</span></div>
+                <div class="footer-item"><a href="ruruha(3).html">PROFILE</a><span class="footer-sub">詳しい自己紹介</span></div>
+                <div class="footer-item"><a href="ruruha(1).html">HOBBY</a><span class="footer-sub">趣味ページ</span></div>
+                <div class="footer-item"><a href="ruruha(2).html">FAVORITE</a><span class="footer-sub">推しの紹介</span></div>
+                <div class="footer-item"><a href="ruruha(4).html">EXCHANGE</a><span class="footer-sub">グッズ交換</span></div>
+            </nav>
+            <div class="footer-bottom">
+                <img src="るるはch.png" alt="るるはch" class="footer-logo">
+                <div class="footer-sns">
+                    <a href="https://twitter.com/S_H_1006neo" target="_blank"><img src="X.png" alt="Twitter"></a>
+                    <a href="https://youtube.com/channel/UC90rEN2i0jCUwfDl-g_GmFQ?app=desktop" target="_blank"><img src="youtube.png" alt="YouTube"></a>
+                </div>
+                <p class="copyright">&copy; ruruha All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const ADMIN_ID = "SUGIKAWAHARUTO";
+        const ADMIN_PASSWORD = "haruru0918";
+        let isAdmin = false;
+
+        // ★最初から全員に見えるデフォルトグッズリスト★
+        const defaultGoods = [
+            { id: 1, type: "譲", title: "アクリルスタンド 三途川ハカ", tags: ["俺クロ", "三途川ハカ", "アクスタ"], stock: 2, image: "" },
+            { id: 2, type: "求", title: "缶バッジ 三途川ハカ", tags: ["俺クロ", "三途川ハカ", "缶バッジ"], stock: 1, image: "" }
+        ];
+
+        let goodsList = JSON.parse(localStorage.getItem('myGoodsList')) || defaultGoods;
+
+        // ★データ不備やNaNの自動修正処理★
+        goodsList = goodsList.map((item, idx) => {
+            return {
+                id: item.id || Date.now() + idx,
+                type: item.type || "譲",
+                title: item.title || "名称未設定",
+                tags: item.tags || [],
+                stock: (typeof item.stock === 'number' && !isNaN(item.stock)) ? item.stock : 1,
+                image: item.image || ""
+            };
+        });
+
+        const form = document.getElementById('goods-form');
+        const container = document.getElementById('goods-container');
+        const searchInput = document.getElementById('search-input');
+        const addFormBox = document.getElementById('add-form-box');
+        const adminBtn = document.getElementById('admin-btn');
+        const adminStatusText = document.getElementById('admin-status-text');
+
+        // 管理者認証
+        function toggleAdmin() {
+            if (isAdmin) {
+                isAdmin = false;
+                addFormBox.style.display = 'none';
+                adminBtn.textContent = '🔒 管理者ログイン';
+                adminStatusText.textContent = '※閲覧モード（譲渡可能グッズのみ表示中）';
+                renderGoods(searchInput.value);
+            } else {
+                const inputId = prompt("管理者IDを入力してください：");
+                if (!inputId) return;
+                const inputPass = prompt("パスワードを入力してください：");
+                if (!inputPass) return;
+
+                if (inputId === ADMIN_ID && inputPass === ADMIN_PASSWORD) {
+                    isAdmin = true;
+                    addFormBox.style.display = 'block';
+                    adminBtn.textContent = '🔓 ログアウト';
+                    adminStatusText.textContent = '🔓 管理者モード（在庫数調整・全アイテム管理中）';
+                    renderGoods(searchInput.value);
+                } else {
+                    alert("IDまたはパスワードが正しくありません。");
+                }
+            }
+        }
+
+        // 描画処理
+        function renderGoods(filterText = '') {
+            container.innerHTML = '';
+
+            const filteredList = goodsList.filter(item => {
+                // 閲覧者には在庫0のものは表示しない
+                if (!isAdmin && item.stock <= 0) return false;
+
+                const text = filterText.toLowerCase();
+                const matchTitle = item.title.toLowerCase().includes(text);
+                const matchType = item.type.toLowerCase().includes(text);
+                const matchTags = item.tags.some(tag => tag.toLowerCase().includes(text));
+                return matchTitle || matchType || matchTags;
+            });
+
+            if (filteredList.length === 0) {
+                container.innerHTML = '<p style="grid-column: 1/-1; color:#888;">現在表示できるグッズはありません。</p>';
+                return;
+            }
+
+            filteredList.forEach((item) => {
+                const card = document.createElement('div');
+                card.className = 'goods-card';
+
+                const tagsHtml = item.tags.map(tag => `<span class="tag-badge" onclick="clickTag('${tag}')">#${tag}</span>`).join('');
+                
+                const stockControlHtml = isAdmin ? `
+                    <div class="stock-control" style="display: flex;">
+                        <span>在庫数:</span>
+                        <div>
+                            <button class="stock-btn" onclick="changeStock(${item.id}, -1)">-</button>
+                            <span style="font-weight:bold; margin: 0 8px;">${item.stock}</span>
+                            <button class="stock-btn" onclick="changeStock(${item.id}, 1)">+</button>
+                        </div>
+                        <button class="delete-btn" onclick="deleteItem(${item.id})">削除</button>
+                    </div>
+                ` : '';
+
+                card.innerHTML = `
+                    <img src="${item.image || 'https://via.placeholder.com/200?text=No+Image'}" class="goods-img" alt="${item.title}">
+                    <div class="goods-content">
+                        <div>
+                            <div class="goods-header">
+                                <span class="goods-type type-${item.type}">${item.type}</span>
+                                <span class="stock-badge">残り ${item.stock} 個</span>
+                            </div>
+                            <div class="goods-title">${item.title}</div>
+                            <div class="goods-tags">${tagsHtml}</div>
+                        </div>
+                        ${stockControlHtml}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // 在庫数の増減処理
+        function changeStock(id, delta) {
+            const item = goodsList.find(g => g.id === id);
+            if (item) {
+                item.stock = Math.max(0, item.stock + delta);
+                saveAndRefresh();
+            }
+        }
+
+        // アイテム完全削除
+        function deleteItem(id) {
+            if (confirm('このグッズカードを完全に削除しますか？')) {
+                goodsList = goodsList.filter(g => g.id !== id);
+                saveAndRefresh();
+            }
+        }
+
+        // データの保存と再描画
+        function saveAndRefresh() {
+            localStorage.setItem('myGoodsList', JSON.stringify(goodsList));
+            renderGoods(searchInput.value);
+        }
+
+        // 新規登録フォーム送信
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const type = document.getElementById('item-type').value;
+            const stock = parseInt(document.getElementById('item-stock').value, 10) || 1;
+            const title = document.getElementById('item-title').value;
+            const tagsRaw = document.getElementById('item-tags').value;
+            const imageName = document.getElementById('item-image-name').value.trim();
+
+            const tags = tagsRaw.split(',').map(t => t.trim()).filter(t => t.length > 0);
+
+            const newItem = {
+                id: Date.now(),
+                type,
+                title,
+                tags,
+                stock,
+                image: imageName
+            };
+            
+            goodsList.push(newItem);
+            saveAndRefresh();
+            form.reset();
+            document.getElementById('item-stock').value = 1;
+        });
+
+        // GitHub用コード自動生成＆クリップボードコピー処理
+        function generateGitHubCode() {
+            const jsonText = JSON.stringify(goodsList, null, 8);
+            const generatedCode = `const defaultGoods = ${jsonText};`;
+            
+            const textarea = document.getElementById('export-textarea');
+            textarea.value = generatedCode;
+            textarea.style.display = 'block';
+            textarea.select();
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(generatedCode).then(() => {
+                    alert("✅ GitHub更新用コードをコピーしました！\n\nGitHubで「ruruha(4).html」を開き、「const defaultGoods = [...]」の部分に上書き貼り付けしてCommitしてください。");
+                }).catch(() => {
+                    alert("コードを生成しました。表示されたテキストを全選択してコピーしてください。");
+                });
+            } else {
+                alert("コードを生成しました。表示されたテキストを全選択してコピーしてください。");
+            }
+        }
+
+        function clickTag(tagName) {
+            searchInput.value = tagName;
+            renderGoods(tagName);
+        }
+
+        searchInput.addEventListener('input', function(e) {
+            renderGoods(e.target.value);
+        });
+
+        // 初期描画
+        renderGoods();
+    </script>
+</body>
+</html>

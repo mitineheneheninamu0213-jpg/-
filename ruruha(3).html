@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>詳しい自己紹介</title>
+    <style>
+        /* 全体の基本設定 */
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+            background-color: #ffffff;
+            color: #0a0a0a;
+            line-height: 1.8;
+            padding: 100px 20px 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        /* 見出し（タイトル）のデザイン */
+        h1 { 
+            font-size: 2.5rem; 
+            color: #0a0a0a; 
+            border-bottom: 3px solid #ff4500; 
+            padding-bottom: 10px; 
+            display: block;
+            width: fit-content;
+            margin: 0 auto 30px auto;
+        }
+
+        /* ==========================================
+           プロフィールカードのレイアウト
+           ========================================== */
+        .profile-container {
+            max-width: 700px;
+            margin: 30px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 上段（プロフ写真 ＋ 基本情報3つ） */
+        .profile-top {
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        /* 左側：プロフ写真枠 */
+        .profile-img-box {
+            flex: 1;
+            min-width: 180px;
+            border: 2px solid #333;
+            border-radius: 16px;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #fefefe;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .profile-img-box img {
+            width: 100%;
+            height: 100%;
+            max-height: 220px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        /* 右側：名前・誕生日・年齢の積み重ね */
+        .profile-info-list {
+            flex: 1.5;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        /* 個別の丸枠テキストエリア */
+        .info-item {
+            border: 2px solid #333;
+            border-radius: 25px;
+            padding: 10px 20px;
+            text-align: left;
+            font-size: 1.05rem;
+            font-weight: bold;
+            background-color: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-item label {
+            color: #ff4500;
+            margin-right: 10px;
+        }
+
+        /* 下段：自由に色々書く大きな枠 */
+        .profile-free-box {
+            border: 2px solid #333;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: left;
+            background-color: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .profile-free-box h3 {
+            margin-top: 0;
+            color: #00ffff;
+            border-bottom: 2px solid #00ffff;
+            display: inline-block;
+            padding-bottom: 4px;
+            margin-bottom: 15px;
+        }
+
+        /* スマホ等の画面幅が狭い場合の調整 */
+        @media (max-width: 600px) {
+            .profile-top {
+                flex-direction: column;
+            }
+            .profile-img-box img {
+                max-height: 250px;
+            }
+        }
+
+        /* トップに戻るボタン */
+        .back-btn { 
+            display: inline-block; 
+            margin-top: 40px; 
+            padding: 10px 20px; 
+            background-color: #00ffff; 
+            color: #0a0a0a; 
+            text-decoration: none; 
+            font-weight: bold;
+            border-radius: 5px; 
+            transition: 0.3s; 
+        }
+
+        .back-btn:hover { 
+            background-color: #ff4500; 
+            color: #fff; 
+        }
+
+        /* ==========================================
+           1. ロゴ（画面左上に固定）
+           ========================================== */
+        .logo-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: inline-block;
+            text-decoration: none;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .logo-img {
+            height: 68px;
+            width: 135px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .logo-link:hover {
+            opacity: 0.8;
+            transform: translateY(-2px);
+        }
+
+        /* ==========================================
+           2. ハンバーガーメニュー（画面右上に固定）
+           ========================================== */
+        #menu-toggle {
+            display: none;
+        }
+
+        .hamburger-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+            background-color: #333;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            align-items: center;
+            padding: 8px 0;
+            box-sizing: border-box;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .hamburger-btn span {
+            width: 24px;
+            height: 3px;
+            background-color: #fff;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .dropdown-menu {
+            position: fixed;
+            top: 75px;
+            right: 20px;
+            width: 200px;
+            background-color: rgba(30, 30, 30, 0.95);
+            border-radius: 12px;
+            padding: 15px 0;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            z-index: 999;
+            
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px) scale(0.95);
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-menu ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: center;
+        }
+
+        .dropdown-menu li {
+            margin: 10px 0;
+        }
+
+        .dropdown-menu a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: bold;
+            display: block;
+            padding: 8px 0;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #00d2ff;
+        }
+
+        #menu-toggle:checked ~ .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        #menu-toggle:checked ~ .hamburger-btn span:nth-child(1) {
+            transform: translateY(9px) rotate(45deg);
+        }
+        #menu-toggle:checked ~ .hamburger-btn span:nth-child(2) {
+            opacity: 0;
+        }
+        #menu-toggle:checked ~ .hamburger-btn span:nth-child(3) {
+            transform: translateY(-9px) rotate(-45deg);
+        }
+
+        /* ==========================================
+           フッターデザイン
+           ========================================== */
+        .site-footer {
+            background-color: #0d0d0d;
+            color: #ffffff;
+            padding: 40px 20px 20px;
+            margin-top: 60px;
+            font-family: sans-serif;
+        }
+
+        .footer-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* メニューのグリッド配置（2列～4列） */
+        .footer-nav {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px;
+            text-align: left;
+        }
+
+        .footer-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .footer-item a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s;
+        }
+
+        /* 六角形アイコンの装飾 */
+        .footer-item a::before {
+            content: '⬡';
+            color: #00ffff; /* シアンカラー */
+            font-size: 0.9rem;
+        }
+
+        .footer-item a:hover {
+            color: #00ffff;
+        }
+
+        .footer-sub {
+            font-size: 0.75rem;
+            color: #aaaaaa;
+            margin-top: 2px;
+            padding-left: 18px;
+        }
+
+        /* フッター下部（ロゴ・SNS・コピーライト） */
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #333333;
+            padding-top: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .footer-logo {
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .footer-sns {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .footer-sns img {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+            filter: brightness(0) invert(1); /* 白く統一表示 */
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .footer-sns img:hover {
+            transform: scale(1.1);
+            opacity: 0.8;
+        }
+
+        .copyright {
+            font-size: 0.8rem;
+            color: #888888;
+            margin: 0;
+        }
+
+        /* スマホ対応 */
+        @media (max-width: 600px) {
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- トップページへ戻るロゴリンク（左上に固定） -->
+    <a href="ruruha.html" class="logo-link">
+      <img src="るるはch.png" alt="サイトロゴ" class="logo-img">
+    </a>
+
+    <!-- ハンバーガーメニュー（右上に固定） -->
+    <input type="checkbox" id="menu-toggle">
+    <label for="menu-toggle" class="hamburger-btn">
+      <span></span>
+      <span></span>
+      <span></span>
+    </label>
+
+    <nav class="dropdown-menu">
+      <ul>
+        <li><a href="ruruha.html">ホーム</a></li>
+        <li><a href="ruruha(3).html">詳しい自己紹介</a></li>
+        <li><a href="ruruha(1).html">趣味ページ</a></li>
+        <li><a href="ruruha(2).html">推しの紹介</a></li>
+        <li><a href="ruruha(4).html">グッズ管理</a></li>
+        <li><a href="https://twitter.com/S_H_1006neo" target="_blank">Twitter (X)</a></li>
+        <li><a href="https://youtube.com/channel/UC90rEN2i0jCUwfDl-g_GmFQ?app=desktop" target="_blank">YouTube</a></li>  
+      </ul>
+    </nav>
+
+    <!-- メインコンテンツ -->
+    <h1>どうもー！るるはでーす</h1>
+
+    <!-- プロフィールブロックコンテナ -->
+    <div class="profile-container">
+        
+        <!-- 上段（プロフ写真 ＋ 名前・誕生日・年齢） -->
+        <div class="profile-top">
+            <!-- 左側：プロフ写真 -->
+            <div class="profile-img-box">
+                <img src="るるは写真.jpg" alt="プロフ写真">
+            </div>
+
+            <!-- 右側：名前・誕生日・年齢 -->
+            <div class="profile-info-list">
+                <div class="info-item">
+                    <label>名前：</label><span>るるは</span>
+                </div>
+                <div class="info-item">
+                    <label>誕生日：</label><span>10月06日</span>
+                </div>
+                <!-- ★ここに自動更新される年齢が入ります★ -->
+                <div class="info-item">
+                    <label>年齢：</label><span id="user-age">計算中...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 下段：自由に色々書くスペース -->
+        <div class="profile-free-box">
+            <h3>メッセージ / 自己紹介</h3>
+            <p>趣味はゲームとゲーム実況を見ることと俺クロを見るのとグッズ収集かな多分他にもあると思う...？
+なるべくリプとかくれると嬉しいなぁーと思ってます！
+多分来年くらいからプロセカの動画とかをYouTubeにあげると思いますぜひ見てね</p>
+        </div>
+
+    </div>
+
+    <!-- メインページに戻るボタン -->
+    <a href="ruruha.html" class="back-btn">← トップページに戻る</a>
+
+    <!-- ★年齢を自動計算するプログラム★ -->
+    <script>
+        // 1. 生年月日を設定（年-月-日）
+        const birthDate = new Date('2008-10-06'); // ← ここをご自身の生年月日に変更してください！
+
+        function calculateAge(birth) {
+            const today = new Date();
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+            
+            // 今年の誕生日がまだ来ていない場合は 1 歳引く
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            return age;
+        }
+
+        // HTMLに年齢をセットする
+        document.getElementById('user-age').textContent = calculateAge(birthDate) + '歳';
+    </script>
+
+    <!-- フッターエリア -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            
+            <!-- 1. メニューリンク一覧 -->
+            <nav class="footer-nav">
+                <div class="footer-item">
+                    <a href="ruruha.html">HOME</a>
+                    <span class="footer-sub">ホーム</span>
+                </div>
+                <div class="footer-item">
+                    <a href="ruruha(3).html">PROFILE</a>
+                    <span class="footer-sub">詳しい自己紹介</span>
+                </div>
+                <div class="footer-item">
+                    <a href="ruruha(1).html">HOBBY</a>
+                    <span class="footer-sub">趣味ページ</span>
+                </div>
+                <div class="footer-item">
+                    <a href="ruruha(2).html">FAVORITE</a>
+                    <span class="footer-sub">推しの紹介</span>
+                </div>
+                <div class="footer-item">
+                    <a href="ruruha(4).html">EXCHANGE</a>
+                    <span class="footer-sub">グッズ交換</span>
+                </div>
+            </nav>
+
+            <!-- 2. ロゴ・SNS・コピーライト -->
+            <div class="footer-bottom">
+                <img src="るるはch.png" alt="るるはch" class="footer-logo">
+                
+                <div class="footer-sns">
+                    <a href="https://twitter.com/S_H_1006neo" target="_blank">
+                        <img src="X.png" alt="Twitter (X)">
+                    </a>
+                    <a href="https://youtube.com/channel/UC90rEN2i0jCUwfDl-g_GmFQ?app=desktop" target="_blank">
+                        <img src="youtube.png" alt="YouTube">
+                    </a>
+                </div>
+
+                <p class="copyright">&copy; ruruha All Rights Reserved.</p>
+            </div>
+
+        </div>
+    </footer>
+</body>
+</html>
