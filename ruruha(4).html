@@ -313,7 +313,12 @@
         // ★表示するグッズリスト★
         // 今後グッズを追加したい場合は、以下のようにオブジェクトを追加してください。
         // 例: { id: 1, type: "譲", title: "グッズ名", tags: ["タグ1", "タグ2"], stock: 1, image: "画像URL" }
-        const goodsList = [];
+        const goodsList = [<div class="goods-item" data-id="1791288847259">
+  <img src="images/1791288847259.jpg" alt="ナナエム ブロマイド">
+  <h3>ナナエム ブロマイド</h3>
+  <div class="tags"><span class="tag">ブロマイド</span> <span class="tag">ナナエム</span> <span class="tag">百式</span> <span class="tag">メモリーズ</span></div>
+  <p>メモリーズの百式ナナエムです</p>
+</div>];
 
         const container = document.getElementById('goods-container');
         const searchInput = document.getElementById('search-input');
