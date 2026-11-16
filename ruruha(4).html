@@ -19,16 +19,84 @@
       background-color: var(--bg);
       color: var(--text);
       margin: 0;
-      padding: 20px;
+      padding: 0;
       line-height: 1.6;
     }
+
+    /* ナビゲーションバー（ハンバーガー＆ホームに戻る） */
+    .navbar {
+      background: var(--card-bg);
+      border-bottom: 2px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 5px rgba(255, 126, 185, 0.05);
+    }
+    .nav-brand {
+      font-weight: bold;
+      color: var(--primary-dark);
+      text-decoration: none;
+      font-size: 1.1rem;
+    }
+    .nav-menu-container {
+      position: relative;
+    }
+    .hamburger-btn {
+      background: none;
+      border: 2px solid var(--primary);
+      color: var(--primary-dark);
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.9rem;
+      background-color: #fff;
+    }
+    .hamburger-btn:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 45px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 180px;
+      overflow: hidden;
+      z-index: 200;
+    }
+    .dropdown-menu.show {
+      display: block;
+    }
+    .dropdown-item {
+      display: block;
+      padding: 10px 15px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.9rem;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .dropdown-item:hover {
+      background: var(--bg);
+      color: var(--primary-dark);
+    }
+
     .container {
       max-width: 900px;
-      margin: 0 auto;
+      margin: 20px auto;
+      padding: 0 15px;
     }
     header {
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
       padding: 20px;
       background: var(--card-bg);
       border-radius: 16px;
@@ -36,18 +104,10 @@
       box-shadow: 0 4px 10px rgba(255, 126, 185, 0.1);
     }
     h1 {
-      margin: 0 0 10px 0;
+      margin: 0 0 8px 0;
       color: var(--primary-dark);
-      font-size: 1.6rem;
+      font-size: 1.5rem;
     }
-    .back-link {
-      display: inline-block;
-      margin-top: 8px;
-      color: #666;
-      text-decoration: none;
-      font-size: 0.9rem;
-    }
-    .back-link:hover { text-decoration: underline; }
 
     /* タブ切り替え */
     .tabs {
@@ -58,7 +118,7 @@
       flex-wrap: wrap;
     }
     .tab-btn {
-      padding: 12px 24px;
+      padding: 10px 20px;
       border: 2px solid var(--primary);
       background: #fff;
       color: var(--primary-dark);
@@ -66,7 +126,7 @@
       border-radius: 30px;
       cursor: pointer;
       transition: 0.2s;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
     .tab-btn.active, .tab-btn:hover {
       background: var(--primary);
@@ -172,8 +232,6 @@
       transition: 0.2s;
     }
     .btn-submit:hover { background: var(--primary-dark); }
-    .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
-
     .btn-danger {
       background: #ff5252;
       color: #fff;
@@ -240,13 +298,26 @@
 </head>
 <body>
 
+<!-- 上部固定ナビゲーションバー（ホームに戻る ＆ ハンバーガーメニュー） -->
+<nav class="navbar">
+  <a href="index.html" class="nav-brand">🏠 るるはの紹介所</a>
+  <div class="nav-menu-container">
+    <button class="hamburger-btn" onclick="toggleMenu()">☰ メニュー</button>
+    <div id="dropdown-menu" class="dropdown-menu">
+      <a href="index.html" class="dropdown-item">ホームへ戻る</a>
+      <a href="trade.html" class="dropdown-item">グッズ交換ページ</a>
+      <a href="#" class="dropdown-item" onclick="switchTab('list'); toggleMenu(); return false;">一覧を見る</a>
+      <a href="#" class="dropdown-item" onclick="switchTab('form'); toggleMenu(); return false;">交換を申請する</a>
+    </div>
+  </div>
+</nav>
+
 <div id="loading-overlay">処理中です...そのままお待ちください</div>
 
 <div class="container">
   <header>
     <h1>✨ グッズ交換ページ ✨</h1>
     <p style="margin: 0; font-size: 0.9rem; color: #666;">譲渡・求一覧の確認と、交換申請フォームです</p>
-    <a href="index.html" class="back-link">← トップページ（るるはの紹介所）へ戻る</a>
   </header>
 
   <div class="tabs">
@@ -357,7 +428,6 @@
   import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  // 設定反映済み
   const ADMIN_EMAIL = "miti.nehenehe.ninamu0213@gmail.com";
   const CLOUDINARY_CLOUD_NAME = "j0dd1syt";
   const CLOUDINARY_UPLOAD_PRESET = "ruruha_exchange";
@@ -444,4 +514,197 @@
       container.innerHTML = "";
       snapshot.forEach((docSnap) => {
         const req = docSnap.data();
-        const dateStr = req.createdAt ? new Date(req.createdAt.toDate()).toLocaleString("ja-
+        const dateStr = req.createdAt ? new Date(req.createdAt.toDate()).toLocaleString("ja-JP") : "";
+        container.innerHTML += `
+          <div class="request-item">
+            <a href="${req.imageUrl}" target="_blank" title="クリックで拡大">
+              <img src="${req.imageUrl}" alt="申請グッズ画像">
+            </a>
+            <div class="request-details">
+              <div style="font-size:0.8rem; color:#888;">申請日時: ${dateStr}</div>
+              <p style="margin:4px 0;"><strong>X ID:</strong> ${escapeHtml(req.xId)}</p>
+              <p style="margin:4px 0;"><strong>グッズ:</strong> ${escapeHtml(req.goodsName)}</p>
+              <p style="margin:4px 0;"><strong>交換方法:</strong> ${escapeHtml(req.method)}（${escapeHtml(req.methodDetail)}）</p>
+              <p style="margin:4px 0;"><strong>備考:</strong> ${escapeHtml(req.note || "なし")}</p>
+              <button class="btn-danger" style="margin-top:8px;" onclick="deleteRequest('${docSnap.id}')">対応完了（削除）</button>
+            </div>
+          </div>
+        `;
+      });
+    } catch (e) {
+      console.error(e);
+      container.innerHTML = "<p style='color:red;'>申請の読み込みに失敗しました。</p>";
+    }
+  }
+
+  document.getElementById("trade-request-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fileInput = document.getElementById("req-image");
+    if (!fileInput.files[0]) return alert("画像を選択してください。");
+
+    setLoading(true);
+    try {
+      const imageUrl = await uploadImageToCloudinary(fileInput.files[0]);
+      await addDoc(collection(db, "requests"), {
+        xId: document.getElementById("req-xid").value.trim(),
+        goodsName: document.getElementById("req-goods").value.trim(),
+        imageUrl: imageUrl,
+        method: document.getElementById("req-method").value,
+        methodDetail: document.getElementById("req-method-detail").value.trim(),
+        note: document.getElementById("req-note").value.trim(),
+        createdAt: serverTimestamp()
+      });
+      alert("交換申請を送信しました！確認後、XのDMにてご連絡いたします。");
+      e.target.reset();
+      document.getElementById("method-detail-group").style.display = "none";
+      switchTab("list");
+    } catch (err) {
+      console.error(err);
+      alert("送信中にエラーが発生しました: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  document.getElementById("admin-add-goods-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!isAdmin) return;
+    const fileInput = document.getElementById("add-image");
+    if (!fileInput.files[0]) return alert("画像を選択してください。");
+
+    setLoading(true);
+    try {
+      const imageUrl = await uploadImageToCloudinary(fileInput.files[0]);
+      await addDoc(collection(db, "goods"), {
+        type: document.getElementById("add-type").value,
+        title: document.getElementById("add-title").value.trim(),
+        imageUrl: imageUrl,
+        note: document.getElementById("add-note").value.trim(),
+        createdAt: serverTimestamp()
+      });
+      alert("グッズを一覧に追加しました！");
+      e.target.reset();
+      loadGoods();
+    } catch (err) {
+      console.error(err);
+      alert("追加中にエラーが発生しました: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  window.deleteGoods = async (id) => {
+    if (!isAdmin || !confirm("このグッズを一覧から削除しますか？")) return;
+    setLoading(true);
+    try {
+      await deleteDoc(doc(db, "goods", id));
+      await loadGoods();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  window.deleteRequest = async (id) => {
+    if (!isAdmin || !confirm("この申請データを削除しますか？")) return;
+    setLoading(true);
+    try {
+      await deleteDoc(doc(db, "requests", id));
+      await loadRequests();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  document.getElementById("login-btn").addEventListener("click", () => {
+    signInWithPopup(auth, provider).catch(err => alert("ログインエラー: " + err.message));
+  });
+  document.getElementById("logout-btn").addEventListener("click", () => {
+    signOut(auth);
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    const adminTabBtn = document.getElementById("admin-tab-btn");
+    const loginBtn = document.getElementById("login-btn");
+    const logoutBtn = document.getElementById("logout-btn");
+    const statusText = document.getElementById("admin-status-text");
+
+    if (user && user.email === ADMIN_EMAIL) {
+      isAdmin = true;
+      adminTabBtn.style.display = "inline-block";
+      loginBtn.style.display = "none";
+      logoutBtn.style.display = "inline-block";
+      statusText.textContent = "管理者ログイン中";
+      loadGoods();
+      loadRequests();
+    } else {
+      if (user) {
+        alert("管理者アカウントではないためログアウトします。");
+        signOut(auth);
+      }
+      isAdmin = false;
+      adminTabBtn.style.display = "none";
+      loginBtn.style.display = "inline-block";
+      logoutBtn.style.display = "none";
+      statusText.textContent = "";
+      if (document.getElementById("tab-admin").classList.contains("active")) {
+        switchTab("list");
+      }
+      loadGoods();
+    }
+  });
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return str.replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+  }
+</script>
+
+<script>
+  // ハンバーガーメニューの開閉
+  function toggleMenu() {
+    const menu = document.getElementById("dropdown-menu");
+    menu.classList.toggle("show");
+  }
+
+  // 画面のどこかをクリックしたらメニューを閉じる
+  window.addEventListener("click", function(e) {
+    if (!e.target.closest('.nav-menu-container')) {
+      document.getElementById("dropdown-menu").classList.remove("show");
+    }
+  });
+
+  function switchTab(tabName) {
+    document.querySelectorAll(".section").forEach(el => el.classList.remove("active"));
+    document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+    document.getElementById("tab-" + tabName).classList.add("active");
+    
+    const btns = document.querySelectorAll(".tab-btn");
+    if (tabName === "list") btns[0].classList.add("active");
+    if (tabName === "form") btns[1].classList.add("active");
+    if (tabName === "admin") btns[2].classList.add("active");
+  }
+
+  function toggleMethodDetail() {
+    const method = document.getElementById("req-method").value;
+    const group = document.getElementById("method-detail-group");
+    const label = document.getElementById("method-detail-label");
+    const input = document.getElementById("req-method-detail");
+
+    if (method === "郵送（フリマサイト経由）") {
+      group.style.display = "block";
+      label.innerHTML = '使用するフリマサイト名<span class="required">*必須</span>';
+      input.placeholder = "例：メルカリ、ラクマ、PayPayフリマ など";
+      input.required = true;
+    } else if (method === "リアイベ（現地手渡し）") {
+      group.style.display = "block";
+      label.innerHTML = '参加予定のイベント名・日程<span class="required">*必須</span>';
+      input.placeholder = "例：〇〇ライブ 1日目 会場付近";
+      input.required = true;
+    } else {
+      group.style.display = "none";
+      input.required = false;
+    }
+  }
+</script>
+</body>
+</html>
