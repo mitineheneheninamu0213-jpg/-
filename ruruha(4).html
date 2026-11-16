@@ -23,7 +23,7 @@
       line-height: 1.6;
     }
 
-    /* ナビゲーションバー（ハンバーガー＆ホームに戻る） */
+    /* ナビゲーションバー */
     .navbar {
       background: var(--card-bg);
       border-bottom: 2px solid var(--border);
@@ -149,6 +149,15 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.04);
       display: flex;
       flex-direction: column;
+      position: relative;
+      transition: 0.2s;
+    }
+    .goods-card.sold-out {
+      opacity: 0.7;
+      background: #f5f5f5;
+    }
+    .goods-card.sold-out img {
+      filter: grayscale(80%);
     }
     .goods-card img {
       width: 100%;
@@ -162,17 +171,30 @@
       display: flex;
       flex-direction: column;
     }
+    .badge-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
     .badge {
       display: inline-block;
       padding: 3px 10px;
       border-radius: 12px;
       font-size: 0.75rem;
       font-weight: bold;
-      margin-bottom: 8px;
-      align-self: flex-start;
     }
     .badge-offer { background: #e3f2fd; color: #1976d2; }
     .badge-want { background: #fce4ec; color: #c2185b; }
+    .badge-soldout { background: #616161; color: #fff; }
+    .stock-tag {
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: #555;
+      background: #f0f0f0;
+      padding: 2px 8px;
+      border-radius: 8px;
+    }
     .goods-title {
       font-weight: bold;
       font-size: 1.05rem;
@@ -183,6 +205,23 @@
       color: #666;
       margin: 0 0 12px 0;
       white-space: pre-wrap;
+    }
+    .btn-apply-card {
+      width: 100%;
+      padding: 8px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      cursor: pointer;
+      margin-top: auto;
+    }
+    .btn-apply-card:hover { background: var(--primary-dark); }
+    .btn-apply-card:disabled {
+      background: #bdbdbd;
+      cursor: not-allowed;
     }
 
     /* フォームデザイン */
@@ -208,7 +247,7 @@
       font-size: 0.8rem;
       margin-left: 4px;
     }
-    input[type="text"], select, textarea {
+    input[type="text"], input[type="number"], select, textarea {
       width: 100%;
       padding: 10px 12px;
       border: 1px solid #ccc;
@@ -232,17 +271,46 @@
       transition: 0.2s;
     }
     .btn-submit:hover { background: var(--primary-dark); }
+
+    /* 管理者用ボタン類 */
+    .admin-card-controls {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-stock {
+      background: #e0f2f1;
+      color: #00695c;
+      border: 1px solid #80cbc4;
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
     .btn-danger {
       background: #ff5252;
       color: #fff;
       border: none;
-      padding: 6px 12px;
+      padding: 6px 10px;
       border-radius: 6px;
       cursor: pointer;
-      font-size: 0.8rem;
-      margin-top: auto;
+      font-size: 0.75rem;
     }
     .btn-danger:hover { background: #d32f2f; }
+    .btn-approve {
+      background: #4caf50;
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+    .btn-approve:hover { background: #388e3c; }
+    .btn-approve:disabled { background: #9e9e9e; cursor: not-allowed; }
 
     /* 管理者エリア */
     .admin-bar {
@@ -271,6 +339,10 @@
       flex-wrap: wrap;
       align-items: flex-start;
     }
+    .request-item.approved {
+      background: #f1f8e9;
+      border-color: #c5e1a5;
+    }
     .request-item img {
       width: 140px;
       height: 140px;
@@ -281,6 +353,24 @@
     .request-details {
       flex: 1;
       min-width: 220px;
+    }
+    .status-badge-pending {
+      display: inline-block;
+      background: #fff3e0;
+      color: #e65100;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+    .status-badge-approved {
+      display: inline-block;
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: bold;
     }
     #loading-overlay {
       display: none;
@@ -298,7 +388,7 @@
 </head>
 <body>
 
-<!-- 上部固定ナビゲーションバー（ホームに戻る ＆ ハンバーガーメニュー） -->
+<!-- 上部固定ナビゲーションバー -->
 <nav class="navbar">
   <a href="index.html" class="nav-brand">🏠 るるはの紹介所</a>
   <div class="nav-menu-container">
@@ -341,13 +431,20 @@
       
       <form id="trade-request-form">
         <div class="form-group">
+          <label>対象グッズを選択（一覧から選ぶと自動で在庫と連動します）<span class="required">*必須</span></label>
+          <select id="req-target-goods-select" onchange="onSelectTargetGoods()" required>
+            <option value="">読み込み中...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
           <label>X（旧Twitter）のID<span class="required">*必須</span></label>
           <input type="text" id="req-xid" placeholder="@ruruha_example" required>
         </div>
 
         <div class="form-group">
-          <label>交換したいグッズ名（譲・求）<span class="required">*必須</span></label>
-          <input type="text" id="req-goods" placeholder="例：【譲】三途川ハカ ブロマイド / 【求】〇〇 アクリルスタンド" required>
+          <label>交換したいグッズ詳細（お相手側が提供するグッズ名など）<span class="required">*必須</span></label>
+          <input type="text" id="req-goods" placeholder="例：【譲】三途川ハカ ブロマイド / 【求】一覧の〇〇" required>
         </div>
 
         <div class="form-group">
@@ -396,6 +493,10 @@
           <input type="text" id="add-title" placeholder="例：三途川ハカ アクリルスタンド" required>
         </div>
         <div class="form-group">
+          <label>在庫数（個数）<span class="required">*必須</span></label>
+          <input type="number" id="add-stock" value="1" min="1" max="99" required>
+        </div>
+        <div class="form-group">
           <label>グッズ画像<span class="required">*必須</span></label>
           <input type="file" id="add-image" accept="image/*" required>
         </div>
@@ -408,7 +509,7 @@
     </div>
 
     <div class="card-box">
-      <h2 style="margin-top:0; font-size:1.2rem;">📬 届いている交換申請一覧（管理者のみ閲覧可）</h2>
+      <h2 style="margin-top:0; font-size:1.2rem;">📬 届いている交換申請一覧（承認すると在庫が自動で1減ります）</h2>
       <div id="requests-container">
         <p>読み込み中...</p>
       </div>
@@ -426,7 +527,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, getDoc, updateDoc, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const ADMIN_EMAIL = "miti.nehenehe.ninamu0213@gmail.com";
   const CLOUDINARY_CLOUD_NAME = "j0dd1syt";
@@ -447,6 +548,7 @@
   const provider = new GoogleAuthProvider();
 
   let isAdmin = false;
+  let goodsCache = []; // グッズ一覧データを保持
 
   const setLoading = (show) => {
     document.getElementById("loading-overlay").style.display = show ? "flex" : "none";
@@ -466,40 +568,105 @@
     return data.secure_url;
   }
 
+  // グッズ一覧の読み込み＆フォーム選択肢の更新
   async function loadGoods() {
     const container = document.getElementById("goods-container");
+    const selectEl = document.getElementById("req-target-goods-select");
     container.innerHTML = "<p style='text-align:center; grid-column:1/-1;'>読み込み中...</p>";
+    
     try {
       const q = query(collection(db, "goods"), orderBy("createdAt", "desc"));
       const snapshot = await getDocs(q);
+      goodsCache = [];
+
       if (snapshot.empty) {
         container.innerHTML = "<p style='text-align:center; grid-column:1/-1; color:#888;'>現在登録されているグッズはありません。</p>";
+        selectEl.innerHTML = '<option value="OTHER">一覧外・その他（自由記入）</option>';
         return;
       }
+
       container.innerHTML = "";
+      selectEl.innerHTML = '<option value="">-- 申請するグッズを選んでください --</option>';
+
       snapshot.forEach((docSnap) => {
         const item = docSnap.data();
-        const badgeClass = item.type === "譲" ? "badge-offer" : "badge-want";
-        const deleteBtn = isAdmin ? `<button class="btn-danger" onclick="deleteGoods('${docSnap.id}')">削除する</button>` : "";
+        const stock = typeof item.stock === "number" ? item.stock : 1; // 既存データ互換
+        const isSoldOut = stock <= 0;
         
+        goodsCache.push({ id: docSnap.id, ...item, stock });
+
+        // フォームのプルダウンには在庫があるものだけ追加
+        if (!isSoldOut) {
+          const opt = document.createElement("option");
+          opt.value = docSnap.id;
+          opt.textContent = `【${item.type}】${item.title}（残り ${stock}個）`;
+          selectEl.appendChild(opt);
+        }
+
+        const badgeClass = isSoldOut ? "badge-soldout" : (item.type === "譲" ? "badge-offer" : "badge-want");
+        const badgeLabel = isSoldOut ? "終了（在庫なし）" : `【${escapeHtml(item.type)}】`;
+        const cardClass = isSoldOut ? "goods-card sold-out" : "goods-card";
+
+        const applyBtn = isSoldOut
+          ? `<button class="btn-apply-card" disabled>受付終了しました</button>`
+          : `<button class="btn-apply-card" onclick="applyForGoods('${docSnap.id}')">💌 このグッズを申請する</button>`;
+
+        const adminControls = isAdmin ? `
+          <div class="admin-card-controls">
+            <button class="btn-stock" onclick="changeStock('${docSnap.id}', 1)">在庫 +1</button>
+            <button class="btn-stock" onclick="changeStock('${docSnap.id}', -1)">在庫 -1</button>
+            <button class="btn-danger" onclick="deleteGoods('${docSnap.id}')">削除</button>
+          </div>
+        ` : "";
+
         container.innerHTML += `
-          <div class="goods-card">
+          <div class="${cardClass}">
             <img src="${item.imageUrl}" alt="${escapeHtml(item.title)}">
             <div class="goods-info">
-              <span class="badge ${badgeClass}">【${escapeHtml(item.type)}】</span>
+              <div class="badge-row">
+                <span class="badge ${badgeClass}">${badgeLabel}</span>
+                <span class="stock-tag">残り ${stock}個</span>
+              </div>
               <h3 class="goods-title">${escapeHtml(item.title)}</h3>
               <p class="goods-note">${escapeHtml(item.note || "")}</p>
-              ${deleteBtn}
+              ${applyBtn}
+              ${adminControls}
             </div>
           </div>
         `;
       });
+
+      // その他選択肢を最後に追加
+      const otherOpt = document.createElement("option");
+      otherOpt.value = "OTHER";
+      otherOpt.textContent = "その他（一覧にないグッズの相談）";
+      selectEl.appendChild(otherOpt);
+
     } catch (e) {
       console.error(e);
       container.innerHTML = "<p style='text-align:center; grid-column:1/-1; color:red;'>データの読み込みに失敗しました。</p>";
     }
   }
 
+  // カードの「このグッズを申請する」ボタンからフォームへ移動＆自動選択
+  window.applyForGoods = (goodsId) => {
+    switchTab("form");
+    const selectEl = document.getElementById("req-target-goods-select");
+    selectEl.value = goodsId;
+    onSelectTargetGoods();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  window.onSelectTargetGoods = () => {
+    const goodsId = document.getElementById("req-target-goods-select").value;
+    const found = goodsCache.find(g => g.id === goodsId);
+    const inputEl = document.getElementById("req-goods");
+    if (found) {
+      inputEl.value = `希望：【${found.type}】${found.title} ／ 提供：`;
+    }
+  };
+
+  // 交換申請一覧の読み込み（管理者のみ）
   async function loadRequests() {
     if (!isAdmin) return;
     const container = document.getElementById("requests-container");
@@ -515,18 +682,32 @@
       snapshot.forEach((docSnap) => {
         const req = docSnap.data();
         const dateStr = req.createdAt ? new Date(req.createdAt.toDate()).toLocaleString("ja-JP") : "";
+        const isApproved = req.status === "approved";
+        const itemClass = isApproved ? "request-item approved" : "request-item";
+        const statusBadge = isApproved
+          ? `<span class="status-badge-approved">✅ 承認済み（在庫減算済み）</span>`
+          : `<span class="status-badge-pending">⏳ 未対応・承認待ち</span>`;
+
+        const approveBtn = isApproved
+          ? `<button class="btn-approve" disabled>承認済み</button>`
+          : `<button class="btn-approve" onclick="approveRequest('${docSnap.id}', '${req.targetGoodsId || ""}')">✅ 承認する（在庫 -1）</button>`;
+
         container.innerHTML += `
-          <div class="request-item">
+          <div class="${itemClass}">
             <a href="${req.imageUrl}" target="_blank" title="クリックで拡大">
               <img src="${req.imageUrl}" alt="申請グッズ画像">
             </a>
             <div class="request-details">
-              <div style="font-size:0.8rem; color:#888;">申請日時: ${dateStr}</div>
+              <div style="margin-bottom:6px;">${statusBadge} <span style="font-size:0.8rem; color:#888; margin-left:6px;">${dateStr}</span></div>
+              <p style="margin:4px 0;"><strong>対象グッズ:</strong> ${escapeHtml(req.targetGoodsTitle || "指定なし")}</p>
               <p style="margin:4px 0;"><strong>X ID:</strong> ${escapeHtml(req.xId)}</p>
-              <p style="margin:4px 0;"><strong>グッズ:</strong> ${escapeHtml(req.goodsName)}</p>
+              <p style="margin:4px 0;"><strong>申請内容:</strong> ${escapeHtml(req.goodsName)}</p>
               <p style="margin:4px 0;"><strong>交換方法:</strong> ${escapeHtml(req.method)}（${escapeHtml(req.methodDetail)}）</p>
               <p style="margin:4px 0;"><strong>備考:</strong> ${escapeHtml(req.note || "なし")}</p>
-              <button class="btn-danger" style="margin-top:8px;" onclick="deleteRequest('${docSnap.id}')">対応完了（削除）</button>
+              <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+                ${approveBtn}
+                <button class="btn-danger" onclick="deleteRequest('${docSnap.id}')">申請データを削除</button>
+              </div>
             </div>
           </div>
         `;
@@ -537,21 +718,29 @@
     }
   }
 
+  // 申請送信処理
   document.getElementById("trade-request-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const fileInput = document.getElementById("req-image");
     if (!fileInput.files[0]) return alert("画像を選択してください。");
 
+    const targetGoodsId = document.getElementById("req-target-goods-select").value;
+    const foundGoods = goodsCache.find(g => g.id === targetGoodsId);
+    const targetGoodsTitle = foundGoods ? `【${foundGoods.type}】${foundGoods.title}` : "その他（一覧外）";
+
     setLoading(true);
     try {
       const imageUrl = await uploadImageToCloudinary(fileInput.files[0]);
       await addDoc(collection(db, "requests"), {
+        targetGoodsId: foundGoods ? foundGoods.id : "",
+        targetGoodsTitle: targetGoodsTitle,
         xId: document.getElementById("req-xid").value.trim(),
         goodsName: document.getElementById("req-goods").value.trim(),
         imageUrl: imageUrl,
         method: document.getElementById("req-method").value,
         methodDetail: document.getElementById("req-method-detail").value.trim(),
         note: document.getElementById("req-note").value.trim(),
+        status: "pending",
         createdAt: serverTimestamp()
       });
       alert("交換申請を送信しました！確認後、XのDMにてご連絡いたします。");
@@ -566,11 +755,14 @@
     }
   });
 
+  // 管理者によるグッズ追加（在庫数付き）
   document.getElementById("admin-add-goods-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!isAdmin) return;
     const fileInput = document.getElementById("add-image");
     if (!fileInput.files[0]) return alert("画像を選択してください。");
+
+    const stockVal = parseInt(document.getElementById("add-stock").value, 10) || 1;
 
     setLoading(true);
     try {
@@ -578,12 +770,14 @@
       await addDoc(collection(db, "goods"), {
         type: document.getElementById("add-type").value,
         title: document.getElementById("add-title").value.trim(),
+        stock: stockVal,
         imageUrl: imageUrl,
         note: document.getElementById("add-note").value.trim(),
         createdAt: serverTimestamp()
       });
       alert("グッズを一覧に追加しました！");
       e.target.reset();
+      document.getElementById("add-stock").value = 1;
       loadGoods();
     } catch (err) {
       console.error(err);
@@ -592,6 +786,55 @@
       setLoading(false);
     }
   });
+
+  // 申請の承認処理（対象グッズの在庫を自動で -1 する）
+  window.approveRequest = async (requestId, targetGoodsId) => {
+    if (!isAdmin) return;
+    if (!confirm("この申請を承認しますか？（対象グッズの在庫が自動で1つ減ります）")) return;
+
+    setLoading(true);
+    try {
+      if (targetGoodsId) {
+        const goodsRef = doc(db, "goods", targetGoodsId);
+        const goodsSnap = await getDoc(goodsRef);
+        if (goodsSnap.exists()) {
+          const currentStock = typeof goodsSnap.data().stock === "number" ? goodsSnap.data().stock : 1;
+          const nextStock = Math.max(0, currentStock - 1);
+          await updateDoc(goodsRef, { stock: nextStock });
+        }
+      }
+
+      const reqRef = doc(db, "requests", requestId);
+      await updateDoc(reqRef, { status: "approved" });
+
+      alert("申請を承認し、在庫を更新しました！");
+      await loadGoods();
+      await loadRequests();
+    } catch (err) {
+      console.error(err);
+      alert("承認処理中にエラーが発生しました: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 管理者の手動在庫増減（+1 / -1）
+  window.changeStock = async (goodsId, delta) => {
+    if (!isAdmin) return;
+    setLoading(true);
+    try {
+      const goodsRef = doc(db, "goods", goodsId);
+      const goodsSnap = await getDoc(goodsRef);
+      if (goodsSnap.exists()) {
+        const currentStock = typeof goodsSnap.data().stock === "number" ? goodsSnap.data().stock : 1;
+        const nextStock = Math.max(0, currentStock + delta);
+        await updateDoc(goodsRef, { stock: nextStock });
+        await loadGoods();
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   window.deleteGoods = async (id) => {
     if (!isAdmin || !confirm("このグッズを一覧から削除しますか？")) return;
@@ -660,13 +903,11 @@
 </script>
 
 <script>
-  // ハンバーガーメニューの開閉
   function toggleMenu() {
     const menu = document.getElementById("dropdown-menu");
     menu.classList.toggle("show");
   }
 
-  // 画面のどこかをクリックしたらメニューを閉じる
   window.addEventListener("click", function(e) {
     if (!e.target.closest('.nav-menu-container')) {
       document.getElementById("dropdown-menu").classList.remove("show");
