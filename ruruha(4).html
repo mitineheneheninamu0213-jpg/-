@@ -1,381 +1,447 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>グッズ譲渡可能リスト</title>
-    <style>
-        /* 全体の基本設定 */
-        body {
-            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
-            background-color: #ffffff;
-            color: #0a0a0a;
-            line-height: 1.8;
-            padding: 100px 20px 40px;
-            max-width: 900px;
-            margin: 0 auto;
-            text-align: center;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>グッズ交換ページ | るるはの紹介所</title>
+  <style>
+    :root {
+      --primary: #ff7eb9;
+      --primary-dark: #ff5ca8;
+      --bg: #fff5f9;
+      --card-bg: #ffffff;
+      --text: #333333;
+      --border: #ffd1e6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 2px solid var(--border);
+      box-shadow: 0 4px 10px rgba(255, 126, 185, 0.1);
+    }
+    h1 {
+      margin: 0 0 10px 0;
+      color: var(--primary-dark);
+      font-size: 1.6rem;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 8px;
+      color: #666;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .back-link:hover { text-decoration: underline; }
 
-        h1 {
-            font-size: 2.2rem;
-            color: #0a0a0a;
-            border-bottom: 3px solid #ff4500;
-            padding-bottom: 10px;
-            display: inline-block;
-            margin-bottom: 20px;
-        }
+    /* タブ切り替え */
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: 12px 24px;
+      border: 2px solid var(--primary);
+      background: #fff;
+      color: var(--primary-dark);
+      font-weight: bold;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.95rem;
+    }
+    .tab-btn.active, .tab-btn:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+    .section { display: none; }
+    .section.active { display: block; }
 
-        /* 検索バー */
-        .search-box {
-            margin-bottom: 30px;
-        }
+    /* グッズ一覧グリッド */
+    .goods-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+    }
+    .goods-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+    }
+    .goods-card img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      background: #f9f9f9;
+    }
+    .goods-info {
+      padding: 15px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      margin-bottom: 8px;
+      align-self: flex-start;
+    }
+    .badge-offer { background: #e3f2fd; color: #1976d2; }
+    .badge-want { background: #fce4ec; color: #c2185b; }
+    .goods-title {
+      font-weight: bold;
+      font-size: 1.05rem;
+      margin: 0 0 8px 0;
+    }
+    .goods-note {
+      font-size: 0.85rem;
+      color: #666;
+      margin: 0 0 12px 0;
+      white-space: pre-wrap;
+    }
 
-        .search-input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #333;
-            border-radius: 10px;
-            font-size: 1rem;
-            box-sizing: border-box;
-        }
+    /* フォームデザイン */
+    .card-box {
+      background: var(--card-bg);
+      padding: 25px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 18px;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+      font-size: 0.95rem;
+    }
+    .required {
+      color: #e53935;
+      font-size: 0.8rem;
+      margin-left: 4px;
+    }
+    input[type="text"], select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+    input[type="file"] {
+      padding: 6px 0;
+    }
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.05rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-submit:hover { background: var(--primary-dark); }
+    .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
 
-        /* グッズカードの配置 */
-        .goods-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 20px;
-        }
+    .btn-danger {
+      background: #ff5252;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      margin-top: auto;
+    }
+    .btn-danger:hover { background: #d32f2f; }
 
-        .goods-card {
-            background: #fff;
-            border: 2px solid #333;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        .goods-img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            background-color: #eee;
-        }
-
-        .goods-content {
-            padding: 15px;
-            text-align: left;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .goods-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .goods-type {
-            font-size: 0.75rem;
-            font-weight: bold;
-            padding: 3px 8px;
-            border-radius: 4px;
-            color: #fff;
-        }
-
-        .type-譲 { background-color: #ff4500; }
-        .type-求 { background-color: #00d2ff; color: #000; }
-
-        .stock-badge {
-            font-weight: bold;
-            font-size: 0.85rem;
-            background: #f0f0f0;
-            padding: 2px 8px;
-            border-radius: 12px;
-            border: 1px solid #ccc;
-        }
-
-        .goods-title {
-            font-weight: bold;
-            font-size: 1rem;
-            margin-bottom: 8px;
-        }
-
-        .goods-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 10px;
-        }
-
-        .tag-badge {
-            background-color: #f0f4f8;
-            color: #0066cc;
-            font-size: 0.75rem;
-            padding: 2px 8px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .tag-badge:hover {
-            background-color: #0066cc;
-            color: #fff;
-        }
-
-        /* トップに戻るボタン */
-        .back-btn { 
-            display: inline-block; 
-            margin-top: 40px; 
-            padding: 10px 20px; 
-            background-color: #00ffff; 
-            color: #0a0a0a; 
-            text-decoration: none; 
-            font-weight: bold;
-            border-radius: 5px; 
-            transition: 0.3s; 
-        }
-
-        .back-btn:hover { 
-            background-color: #ff4500; 
-            color: #fff; 
-        }
-
-        /* ロゴ（画面左上） */
-        .logo-link {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-            display: inline-block;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .logo-img {
-            height: 68px;
-            width: 135px;
-            object-fit: contain;
-            display: block;
-        }
-
-        /* ハンバーガーメニュー（画面右上） */
-        #menu-toggle { display: none; }
-
-        .hamburger-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 45px;
-            height: 45px;
-            background-color: #333;
-            border-radius: 8px;
-            cursor: pointer;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-evenly;
-            align-items: center;
-            padding: 8px 0;
-            box-sizing: border-box;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .hamburger-btn span {
-            width: 24px;
-            height: 3px;
-            background-color: #fff;
-            border-radius: 2px;
-            transition: all 0.3s;
-        }
-
-        .dropdown-menu {
-            position: fixed;
-            top: 75px;
-            right: 20px;
-            width: 200px;
-            background-color: rgba(30, 30, 30, 0.95);
-            border-radius: 12px;
-            padding: 15px 0;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            z-index: 999;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px) scale(0.95);
-            transition: all 0.3s ease;
-        }
-
-        .dropdown-menu ul { list-style: none; padding: 0; margin: 0; text-align: center; }
-        .dropdown-menu li { margin: 10px 0; }
-        .dropdown-menu a {
-            color: #fff;
-            text-decoration: none;
-            font-size: 15px;
-            font-weight: bold;
-            display: block;
-            padding: 8px 0;
-        }
-
-        #menu-toggle:checked ~ .dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
-        #menu-toggle:checked ~ .hamburger-btn span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
-        #menu-toggle:checked ~ .hamburger-btn span:nth-child(2) { opacity: 0; }
-        #menu-toggle:checked ~ .hamburger-btn span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
-
-        /* フッター */
-        .site-footer {
-            background-color: #0d0d0d;
-            color: #ffffff;
-            padding: 40px 20px 20px;
-            margin-top: 60px;
-        }
-
-        .footer-container { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 30px; }
-        .footer-nav { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 20px; text-align: left; }
-        .footer-item { display: flex; flex-direction: column; }
-        .footer-item a { color: #ffffff; text-decoration: none; font-size: 1rem; font-weight: bold; }
-        .footer-item a::before { content: '⬡'; color: #00ffff; margin-right: 5px; }
-        .footer-sub { font-size: 0.75rem; color: #aaaaaa; padding-left: 18px; }
-        .footer-bottom { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #333; padding-top: 20px; flex-wrap: wrap; gap: 15px; }
-        .footer-logo { height: 40px; object-fit: contain; }
-        .footer-sns { display: flex; gap: 15px; }
-        .footer-sns img { width: 28px; height: 28px; filter: brightness(0) invert(1); }
-        .copyright { font-size: 0.8rem; color: #888; margin: 0; }
-    </style>
+    /* 管理者エリア */
+    .admin-bar {
+      text-align: right;
+      margin-top: 40px;
+      padding-top: 15px;
+      border-top: 1px dashed #ccc;
+    }
+    .btn-admin-login {
+      background: none;
+      border: 1px solid #aaa;
+      color: #666;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .request-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      background: #fffafb;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+    .request-item img {
+      width: 140px;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+    .request-details {
+      flex: 1;
+      min-width: 220px;
+    }
+    #loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.8);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      color: var(--primary-dark);
+      font-size: 1.2rem;
+    }
+  </style>
 </head>
 <body>
 
-    <!-- ロゴ -->
-    <a href="index.html" class="logo-link">
-      <img src="るるはch.png" alt="サイトロゴ" class="logo-img">
-    </a>
+<div id="loading-overlay">処理中です...そのままお待ちください</div>
 
-    <!-- ハンバーガーメニュー -->
-    <input type="checkbox" id="menu-toggle">
-    <label for="menu-toggle" class="hamburger-btn">
-      <span></span>
-      <span></span>
-      <span></span>
-    </label>
+<div class="container">
+  <header>
+    <h1>✨ グッズ交換ページ ✨</h1>
+    <p style="margin: 0; font-size: 0.9rem; color: #666;">譲渡・求一覧の確認と、交換申請フォームです</p>
+    <a href="index.html" class="back-link">← トップページ（るるはの紹介所）へ戻る</a>
+  </header>
 
-    <nav class="dropdown-menu">
-      <ul>
-        <li><a href="index.html">ホーム</a></li>
-        <li><a href="ruruha(3).html">詳しい自己紹介</a></li>
-        <li><a href="ruruha(1).html">趣味ページ</a></li>
-        <li><a href="ruruha(2).html">推しの紹介</a></li>
-        <li><a href="ruruha(4).html">グッズ交換</a></li>
-        <li><a href="https://twitter.com/S_H_1006neo" target="_blank">Twitter (X)</a></li>
-        <li><a href="https://youtube.com/channel/UC90rEN2i0jCUwfDl-g_GmFQ?app=desktop" target="_blank">YouTube</a></li>  
-      </ul>
-    </nav>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('list')">📦 交換グッズ一覧を見る</button>
+    <button class="tab-btn" onclick="switchTab('form')">💌 交換を申請する</button>
+    <button class="tab-btn" id="admin-tab-btn" style="display:none; border-color:#333; color:#333;" onclick="switchTab('admin')">👑 管理者メニュー</button>
+  </div>
 
-    <!-- メインコンテンツ -->
-    <h1>グッズ譲渡可能リスト</h1>
+  <!-- 1. グッズ一覧セクション -->
+  <div id="tab-list" class="section active">
+    <div id="goods-container" class="goods-grid">
+      <p style="text-align:center; grid-column:1/-1;">読み込み中...</p>
+    </div>
+  </div>
 
-    <!-- 検索バー -->
-    <div class="search-box">
-        <input type="text" id="search-input" class="search-input" placeholder="🔍 タグやグッズ名でリアルタイム検索...">
+  <!-- 2. 交換申請フォームセクション -->
+  <div id="tab-form" class="section">
+    <div class="card-box">
+      <h2 style="margin-top:0; color:var(--primary-dark); font-size:1.3rem;">💌 交換申請フォーム</h2>
+      <p style="font-size:0.85rem; color:#666;">送信された内容と写真は管理者のみ確認できます。内容確認後、X（旧Twitter）のDMにてご連絡いたします。</p>
+      
+      <form id="trade-request-form">
+        <div class="form-group">
+          <label>X（旧Twitter）のID<span class="required">*必須</span></label>
+          <input type="text" id="req-xid" placeholder="@ruruha_example" required>
+        </div>
+
+        <div class="form-group">
+          <label>交換したいグッズ名（譲・求）<span class="required">*必須</span></label>
+          <input type="text" id="req-goods" placeholder="例：【譲】三途川ハカ ブロマイド / 【求】〇〇 アクリルスタンド" required>
+        </div>
+
+        <div class="form-group">
+          <label>グッズの写真（IDメモ付き推奨）<span class="required">*必須</span></label>
+          <input type="file" id="req-image" accept="image/*" required>
+        </div>
+
+        <div class="form-group">
+          <label>希望する交換方法<span class="required">*必須</span></label>
+          <select id="req-method" onchange="toggleMethodDetail()" required>
+            <option value="">選択してください</option>
+            <option value="郵送（フリマサイト経由）">郵送（フリマサイト経由）</option>
+            <option value="リアイベ（現地手渡し）">リアイベ（現地手渡し）</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="method-detail-group" style="display:none;">
+          <label id="method-detail-label">詳細<span class="required">*必須</span></label>
+          <input type="text" id="req-method-detail" placeholder="">
+        </div>
+
+        <div class="form-group">
+          <label>備考・メッセージ（任意）</label>
+          <textarea id="req-note" rows="3" placeholder="梱包方法の希望や連絡可能な時間帯などがあればご記入ください"></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">この内容で交換を申請する</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. 管理者専用セクション（管理者ログイン時のみ表示） -->
+  <div id="tab-admin" class="section">
+    <div class="card-box">
+      <h2 style="margin-top:0; font-size:1.2rem;">➕ 新しいグッズを一覧に追加</h2>
+      <form id="admin-add-goods-form">
+        <div class="form-group">
+          <label>区分</label>
+          <select id="add-type">
+            <option value="譲">【譲】お譲り可能</option>
+            <option value="求">【求】探しています</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>グッズ名<span class="required">*必須</span></label>
+          <input type="text" id="add-title" placeholder="例：三途川ハカ アクリルスタンド" required>
+        </div>
+        <div class="form-group">
+          <label>グッズ画像<span class="required">*必須</span></label>
+          <input type="file" id="add-image" accept="image/*" required>
+        </div>
+        <div class="form-group">
+          <label>条件・メモ（任意）</label>
+          <textarea id="add-note" rows="2" placeholder="例：同種・異種問わずお気軽にお声がけください！"></textarea>
+        </div>
+        <button type="submit" class="btn-submit">一覧にグッズを追加する</button>
+      </form>
     </div>
 
-    <!-- グッズ一覧表示 -->
-    <div class="goods-grid" id="goods-container"></div>
+    <div class="card-box">
+      <h2 style="margin-top:0; font-size:1.2rem;">📬 届いている交換申請一覧（管理者のみ閲覧可）</h2>
+      <div id="requests-container">
+        <p>読み込み中...</p>
+      </div>
+    </div>
+  </div>
 
-    <a href="index.html" class="back-btn">← トップページに戻る</a>
+  <div class="admin-bar">
+    <span id="admin-status-text" style="font-size:0.8rem; color:#666; margin-right:10px;"></span>
+    <button id="login-btn" class="btn-admin-login">管理者ログイン</button>
+    <button id="logout-btn" class="btn-admin-login" style="display:none;">ログアウト</button>
+  </div>
+</div>
 
-    <!-- フッター -->
-    <footer class="site-footer">
-        <div class="footer-container">
-            <nav class="footer-nav">
-                <div class="footer-item"><a href="index.html">HOME</a><span class="footer-sub">ホーム</span></div>
-                <div class="footer-item"><a href="ruruha(3).html">PROFILE</a><span class="footer-sub">詳しい自己紹介</span></div>
-                <div class="footer-item"><a href="ruruha(1).html">HOBBY</a><span class="footer-sub">趣味ページ</span></div>
-                <div class="footer-item"><a href="ruruha(2).html">FAVORITE</a><span class="footer-sub">推しの紹介</span></div>
-                <div class="footer-item"><a href="ruruha(4).html">EXCHANGE</a><span class="footer-sub">グッズ交換</span></div>
-            </nav>
-            <div class="footer-bottom">
-                <img src="るるはch.png" alt="るるはch" class="footer-logo">
-                <div class="footer-sns">
-                    <a href="https://twitter.com/S_H_1006neo" target="_blank"><img src="X.png" alt="Twitter"></a>
-                    <a href="https://youtube.com/channel/UC90rEN2i0jCUwfDl-g_GmFQ?app=desktop" target="_blank"><img src="youtube.png" alt="YouTube"></a>
-                </div>
-                <p class="copyright">&copy; ruruha All Rights Reserved.</p>
+<!-- Firebase & Cloudinary 連携スクリプト -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // 設定反映済み
+  const ADMIN_EMAIL = "miti.nehenehe.ninamu0213@gmail.com";
+  const CLOUDINARY_CLOUD_NAME = "j0dd1syt";
+  const CLOUDINARY_UPLOAD_PRESET = "ruruha_exchange";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCZUUjBEMsTJBeghU-5uWih587fmaSsCeo",
+    authDomain: "ruruha-s-exchange-site.firebaseapp.com",
+    projectId: "ruruha-s-exchange-site",
+    storageBucket: "ruruha-s-exchange-site.firebasestorage.app",
+    messagingSenderId: "433542198455",
+    appId: "1:433542198455:web:88b14b3148eb4ac6848932"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
+
+  let isAdmin = false;
+
+  const setLoading = (show) => {
+    document.getElementById("loading-overlay").style.display = show ? "flex" : "none";
+  };
+
+  async function uploadImageToCloudinary(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+      method: "POST",
+      body: formData
+    });
+    if (!res.ok) throw new Error("画像のアップロードに失敗しました");
+    const data = await res.json();
+    return data.secure_url;
+  }
+
+  async function loadGoods() {
+    const container = document.getElementById("goods-container");
+    container.innerHTML = "<p style='text-align:center; grid-column:1/-1;'>読み込み中...</p>";
+    try {
+      const q = query(collection(db, "goods"), orderBy("createdAt", "desc"));
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) {
+        container.innerHTML = "<p style='text-align:center; grid-column:1/-1; color:#888;'>現在登録されているグッズはありません。</p>";
+        return;
+      }
+      container.innerHTML = "";
+      snapshot.forEach((docSnap) => {
+        const item = docSnap.data();
+        const badgeClass = item.type === "譲" ? "badge-offer" : "badge-want";
+        const deleteBtn = isAdmin ? `<button class="btn-danger" onclick="deleteGoods('${docSnap.id}')">削除する</button>` : "";
+        
+        container.innerHTML += `
+          <div class="goods-card">
+            <img src="${item.imageUrl}" alt="${escapeHtml(item.title)}">
+            <div class="goods-info">
+              <span class="badge ${badgeClass}">【${escapeHtml(item.type)}】</span>
+              <h3 class="goods-title">${escapeHtml(item.title)}</h3>
+              <p class="goods-note">${escapeHtml(item.note || "")}</p>
+              ${deleteBtn}
             </div>
-        </div>
-    </footer>
+          </div>
+        `;
+      });
+    } catch (e) {
+      console.error(e);
+      container.innerHTML = "<p style='text-align:center; grid-column:1/-1; color:red;'>データの読み込みに失敗しました。</p>";
+    }
+  }
 
-    <script>
-        // ★表示するグッズリスト★
-        // 今後グッズを追加したい場合は、以下のようにオブジェクトを追加してください。
-        // 例: { id: 1, type: "譲", title: "グッズ名", tags: ["タグ1", "タグ2"], stock: 1, image: "画像URL" }
-        const goodsList = [<div class="goods-item" data-id="1791288847259">
-  <img src="images/1791288847259.jpg" alt="ナナエム ブロマイド">
-  <h3>ナナエム ブロマイド</h3>
-  <div class="tags"><span class="tag">ブロマイド</span> <span class="tag">ナナエム</span> <span class="tag">百式</span> <span class="tag">メモリーズ</span></div>
-  <p>メモリーズの百式ナナエムです</p>
-</div>];
-
-        const container = document.getElementById('goods-container');
-        const searchInput = document.getElementById('search-input');
-
-        // 描画処理
-        function renderGoods(filterText = '') {
-            container.innerHTML = '';
-
-            const filteredList = goodsList.filter(item => {
-                if (item.stock <= 0) return false;
-
-                const text = filterText.toLowerCase();
-                const matchTitle = item.title.toLowerCase().includes(text);
-                const matchType = item.type.toLowerCase().includes(text);
-                const matchTags = item.tags.some(tag => tag.toLowerCase().includes(text));
-                return matchTitle || matchType || matchTags;
-            });
-
-            if (filteredList.length === 0) {
-                container.innerHTML = '<p style="grid-column: 1/-1; color:#888;">現在表示できるグッズはありません。</p>';
-                return;
-            }
-
-            filteredList.forEach((item) => {
-                const card = document.createElement('div');
-                card.className = 'goods-card';
-
-                const tagsHtml = item.tags.map(tag => `<span class="tag-badge" onclick="clickTag('${tag}')">#${tag}</span>`).join('');
-
-                card.innerHTML = `
-                    <img src="${item.image || 'https://via.placeholder.com/200?text=No+Image'}" class="goods-img" alt="${item.title}">
-                    <div class="goods-content">
-                        <div>
-                            <div class="goods-header">
-                                <span class="goods-type type-${item.type}">${item.type}</span>
-                                <span class="stock-badge">残り ${item.stock} 個</span>
-                            </div>
-                            <div class="goods-title">${item.title}</div>
-                            <div class="goods-tags">${tagsHtml}</div>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function clickTag(tagName) {
-            searchInput.value = tagName;
-            renderGoods(tagName);
-        }
-
-        searchInput.addEventListener('input', function(e) {
-            renderGoods(e.target.value);
-        });
-
-        // 初期描画
-        renderGoods();
-    </script>
-</body>
-</html>
+  async function loadRequests() {
+    if (!isAdmin) return;
+    const container = document.getElementById("requests-container");
+    container.innerHTML = "<p>読み込み中...</p>";
+    try {
+      const q = query(collection(db, "requests"), orderBy("createdAt", "desc"));
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) {
+        container.innerHTML = "<p style='color:#888;'>現在届いている申請はありません。</p>";
+        return;
+      }
+      container.innerHTML = "";
+      snapshot.forEach((docSnap) => {
+        const req = docSnap.data();
+        const dateStr = req.createdAt ? new Date(req.createdAt.toDate()).toLocaleString("ja-
